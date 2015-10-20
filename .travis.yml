@@ -1,4 +1,4 @@
-./configure && make && make test
 language: c
 compiler: gcc
+script: Trabalho_Final.c
 sudo: required
