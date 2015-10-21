@@ -1,4 +1,4 @@
 language: c
 compiler: gcc
-script: Trabalho_Final.c
+script: scons
 sudo: required
