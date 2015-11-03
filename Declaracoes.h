@@ -1,3 +1,40 @@
+typedef struct{
+    char nome_entidade[100];
+    int qtd_campos;
+    char **campos;
+    int *tamanhos;
+    char **tipos;
+    int tamanho_header;
+} tabela;
+
+typedef struct{
+    int id;
+    int pos;
+} heap;
+
+typedef struct Tipo {
+  struct Tabela *tabela;
+} Tipo;
+
+typedef struct Coluna {
+  char *nome;
+  // salva espaco
+  union {
+    char *nome_do_tipo;
+    Tipo *tipo;
+  };
+  int tamanho;
+} Coluna;
+
+typedef struct Tabela {
+  Tipo tipo;
+  
+  char *nome;
+  int quantidade_colunas;
+  Coluna *colunas;
+  
+} Tabela;
+
 void createFiles();//FUNCAO QUE CRIA OS ARQUIVOS
 void writeEntity(char *nome);//FUNCAO QUE GRAVA ENTIDADES NOS ARQUIVOS
 void readFiles();//FUNCAO QUE LE TODO O ARQUIVO E PRINTA NA TELA
@@ -11,6 +48,10 @@ void removeEntity(char *nome);//FUNCAO QUE DELETA UMA ENTIDADE ATRAVES DO ID
 void heapsort2(heap a[], int n);//ORDENA OS ELEMENTOS ATRAVES DO INDICE
 void ordena(char *nome);
 void mostraIndex(char *nome);
-void leiaTabela(FILE *);
-void leiaColunas(FILE *, const char *);
+
+void leiaTabelas();
+void leiaTabela(FILE *, Tabela *);
+void leiaColunas(FILE *, Tabela *);
 void checarConsistencia();
+void ordenarTabelas();
+Tabela *procuraTabela(const char *);

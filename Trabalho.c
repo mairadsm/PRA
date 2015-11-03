@@ -1,3 +1,7 @@
+/*********************************/
+/* Aluna: Maira da Silva Machado */
+/*********************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,33 +9,12 @@
 #include "CuTest.h"
 #include "btree.c"
 
-/*********************************/
-/* Aluna: Maira da Silva Machado */
-/*********************************/
-
-typedef struct{
-    char nome_entidade[100];
-    int qtd_campos;
-    char **campos;
-    int *tamanhos;
-    char **tipos;
-    int tamanho_header;
-} tabela;
-
-typedef struct{
-    int id;
-    int pos;
-} heap;
+#include "Declaracoes.h"
 
 FILE *arqGeral;
 FILE *arqIndice;
 
 tabela entidadeGeral;
-
-#include "Declaracoes.h"
-
-//
-void leiaTabelas();
 
 // limpa buffer do teclado
 void purge() {
@@ -638,24 +621,8 @@ void mostraIndex(char *nome){
     fclose(arqIndice);
 }
 
-typedef struct Tipo {
-  //
-} Tipo;
-
-typedef struct Coluna {
-  char *nome;
-  Tipo *tipo;
-  int tamanho;
-} Coluna;
-
-typedef struct Tabela {
-  Tipo tipo; // simular heranca!
-  
-  int quantidade_colunas;
-  
-  Coluna *colunas;
-  
-} Tabela;
+int quantidade_tabelas = 0;
+Tabela *tabelas = NULL;
 
 Tipo INT;
 Tipo CHAR;
@@ -666,14 +633,29 @@ void leiaTabelas() {
     
     // enquanto o arquivo nao estiver vazio
     while(!feof(arquivo)) {
-      leiaTabela(arquivo);
+      
+      quantidade_tabelas++;
+      
+      tabelas = realloc(tabelas, quantidade_tabelas * sizeof(Tabela));
+      
+      leiaTabela(arquivo, &tabelas[quantidade_tabelas - 1]);
+      
     }
     
   } else {
     printf("O arquivo de tabelas não existe!\n");
     exit(1);
   }
+  
   checarConsistencia();
+  
+  /*printf("Minhas tabelas:\n");
+  for(i = 0; i < quantidade_tabelas; i++) {
+    printf("  * Tabela %d = %s\n", i, tabelas[i].nome);
+    for(j = 0; j < tabelas[i].quantidade_colunas; j++) {
+      printf("    * Coluna %s [%d]\n", tabelas[i].colunas[j].nome, tabelas[i].colunas[j].tamanho);
+    };
+  };*/
 }
 
 int fpeek(FILE *arquivo) {
@@ -683,35 +665,40 @@ int fpeek(FILE *arquivo) {
 };
 
 
-void leiaTabela(FILE *arquivo) {
+void leiaTabela(FILE *arquivo, Tabela *tabela) {
   char nome[256] = "";
   fscanf(arquivo, "%[^()](", nome);
   nome[sizeof(nome) - 1] = 0;
   
-  printf("nome = %s\n", nome);
-  leiaColunas(arquivo, nome);
+  tabela->nome = malloc(strlen(nome) + 1);
+  strcpy(tabela->nome, nome);
+  
+  leiaColunas(arquivo, tabela);
   
 }
 
-void leiaColunas(FILE *arquivo, const char *tabela) {
-  char coluna[256] = "";
+void leiaColunas(FILE *arquivo, Tabela *tabela) {
+  char nome_coluna[256] = "";
   char tipo[256] = "";
   int tamanho = 0;
+  
+  tabela->colunas = NULL;
+  tabela->quantidade_colunas = 0;
   
   while(1) {
     
     // vamos ignorar espaços em branco dentro da tabela ;)
-    fscanf(arquivo, "%[ \r\n\t]", coluna); // < variável auxiliar
+    fscanf(arquivo, "%[ \r\n\t]", nome_coluna); // < variável auxiliar
     
     // limpa os buffers
-    coluna[0] = 0;
+    nome_coluna[0] = 0;
     tipo[0] = 0;
     tamanho = 0;
     
     // ve se terminou a tabela
     if(fpeek(arquivo) == ')') {
       // pula uma linha
-      int resultado = fscanf(arquivo, ")%[\r\n]", coluna); // < variável auxiliar
+      int resultado = fscanf(arquivo, ")%[\r\n]", nome_coluna); // < variável auxiliar
       
       if(resultado == 0 || resultado == EOF) {
         printf("Erro ao ler o arquivo de tabelas!\n");
@@ -720,7 +707,7 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
       break;
     }
     
-    int resultado = fscanf(arquivo, "%[^, \r\n\t] %[^,[ \r\n\t]", coluna, tipo);
+    int resultado = fscanf(arquivo, "%[^, \r\n\t] %[^,[ \r\n\t]", nome_coluna, tipo);
     
     if(resultado == 0 || resultado == EOF) {
       printf("Erro ao ler o arquivo de tabelas!\n");
@@ -743,16 +730,93 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
       fgetc(arquivo);
     }
     
-    coluna[sizeof(coluna) - 1] = 0;
+    nome_coluna[sizeof(nome_coluna) - 1] = 0;
     tipo[sizeof(tipo) - 1] = 0;
     
-    printf("Coluna: %s; tipo: %s; tamanho: %d\n", coluna, tipo, tamanho);
+    // salvar coluna na tabela!
+    tabela->quantidade_colunas++;
+    tabela->colunas = realloc(tabela->colunas, tabela->quantidade_colunas * sizeof(Coluna));
+    
+    Coluna *coluna = &tabela->colunas[tabela->quantidade_colunas - 1];
+    
+    coluna->nome = malloc(strlen(nome_coluna) + 1);
+    strcpy(coluna->nome, nome_coluna);
+    
+    coluna->tamanho = tamanho;
+    
+    coluna->nome_do_tipo = malloc(strlen(tipo) + 1);
+    strcpy(coluna->nome_do_tipo, tipo);
     
   };
   
   
 };
 
+int compara_tabelas(Tabela *tabela1, Tabela *tabela2) {
+  return strcmp(tabela1->nome, tabela2->nome);
+}
+
+int compara_colunas(Coluna *coluna1, Coluna *coluna2) {
+  return strcmp(coluna1->nome, coluna2->nome);
+}
+
 void checarConsistencia() {
   
+  ordenarTabelas();
+  
+  int i;
+  for(i = 0; i < quantidade_tabelas; i++) {
+    
+    Tabela *tabela = &tabelas[i];
+    
+    int j;
+    for(j = 0; j < tabela->quantidade_colunas; j++) {
+      Coluna *coluna = &tabela->colunas[j];
+      
+      const char *nome_do_tipo = coluna->nome_do_tipo;
+      
+      if(strcmp(nome_do_tipo, "int") == 0) {
+        coluna->tipo = &INT;
+      } else if(strcmp(nome_do_tipo, "char") == 0) {
+        coluna->tipo = &CHAR;
+      } else {
+        
+        Tabela *novo_tipo = procuraTabela(nome_do_tipo);
+        
+        if(novo_tipo == NULL) {
+          printf("Relacionamento de chave estrangeira na tabela %s: tabela %s não existe!\n", tabela->nome, nome_do_tipo);
+          exit(1);
+        }
+        
+        coluna->tipo = &novo_tipo->tipo;
+        novo_tipo->tipo.tabela = novo_tipo;
+        
+      }
+      
+      // libera memoria que nao vai mais ser usada
+      free(nome_do_tipo);
+      
+    }
+  }
+  
+}
+
+void ordenarTabelas() {
+  // ordena tabelas
+  qsort(tabelas, quantidade_tabelas, sizeof(Tabela), &compara_tabelas);
+  
+  // ordena colunas
+  int i;
+  for(i = 0; i < quantidade_tabelas; i++) {
+    qsort(tabelas[i].colunas, tabelas[i].quantidade_colunas, sizeof(Coluna), &compara_colunas);
+  }
+}
+
+Tabela *procuraTabela(const char *nome) {
+  // tabela falsa
+  Tabela ficticia;
+  ficticia.nome = nome;
+  
+  // como ordenamos, podemos usar pesquisa binaria
+  return bsearch(&ficticia, tabelas, quantidade_tabelas, sizeof(Tabela), &compara_tabelas);
 }
