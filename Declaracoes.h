@@ -5,7 +5,8 @@
 #define RESETA "\033[0m"
 
 typedef struct btreeNode {
-      int val[MAX + 1], count;
+      const char *val[MAX + 1];
+      int count;
       char *data[MAX + 1];
       struct btreeNode *link[MAX + 1];
 } btreeNode;
@@ -48,6 +49,7 @@ typedef struct Tabela {
   int tamanho_binario;
   int ultimo_id;
   btreeNode *items;
+  btreeNode *por_nome;
 } Tabela;
 
 typedef struct CabecalhoTabela {
@@ -86,7 +88,9 @@ void alterarElemento(Tabela *);
 void removerElemento(Tabela *);
 void mostrarItem(Tabela *, char *);
 void mostrarItems(Tabela *, btreeNode *);
+void salvarArvore(Tabela *);
 
 //
-void inserirNaArvore(Tabela *, int, char *);
+void inserirNaArvore(Tabela *, char *, char *);
+int tamanhoArvore(btreeNode *);
 

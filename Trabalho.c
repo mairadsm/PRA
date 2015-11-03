@@ -588,6 +588,8 @@ void leiaTabela(FILE *arquivo, Tabela *tabela) {
   leiaColunas(arquivo, tabela);
   
   tabela->ultimo_id = 0;
+  tabela->items = NULL;
+  tabela->por_nome = NULL;
 }
 
 void leiaColunas(FILE *arquivo, Tabela *tabela) {
@@ -885,6 +887,7 @@ void inserirElemento(Tabela *tabela) {
   char *memoria = malloc(tabela->tamanho_binario);
   
   Coluna *coluna_do_id = NULL;
+  Coluna *coluna_do_nome = NULL;
   
   int i;
   for(i = 0; i < tabela->quantidade_colunas; i++) {
@@ -894,6 +897,11 @@ void inserirElemento(Tabela *tabela) {
     if(strcmp(coluna->nome, "id") == 0) {
       coluna_do_id = coluna;
     } else {
+      
+      // talvez tenhamos que ordenar por nome
+      if(strcmp(coluna->nome, "nome") == 0) {
+        coluna_do_nome = coluna;
+      }
       
       purge();
       printf("%s: ", coluna->nome);
@@ -922,14 +930,17 @@ void inserirElemento(Tabela *tabela) {
   // se chegamos aqui, adiciona o item
   tabela->ultimo_id++;
   int id = tabela->ultimo_id;
+  char buffer[7];
+  sprintf(buffer, "%d", id);
   if(coluna_do_id) {
-    char buffer[coluna_do_id->tamanho + 1];
-    sprintf(buffer, "%d", id);
     memcpy(memoria + coluna_do_id->distancia, buffer, coluna_do_id->tamanho);
   }
   
   //
-  inserirNaArvore(tabela, id, memoria);
+  inserirNaArvore(tabela, buffer, memoria);
+  
+  //
+  salvarArvore(tabela);
 }
 
 void mostrarItem(Tabela *tabela, char *memoria) {
@@ -945,7 +956,7 @@ void mostrarItem(Tabela *tabela, char *memoria) {
       memcpy(buffer, memoria + tabela->colunas[i].distancia, tabela->colunas[i].tamanho);
       
       //
-      printf("\"%s\" ", buffer);
+      printf("\"%s\"", buffer);
     } else if(tabela->colunas[i].tipo == &INT) {
       // copia a memoria
       char buffer[tabela->colunas[i].tamanho + 1];
@@ -953,9 +964,14 @@ void mostrarItem(Tabela *tabela, char *memoria) {
       memcpy(buffer, memoria + tabela->colunas[i].distancia, tabela->colunas[i].tamanho);
       
       //
-      printf("%s ", buffer);
+      printf("%s", buffer);
     } else {
       
+    }
+    
+    // tenta deixar mais bonito
+    if(i + 1 < tabela->quantidade_colunas) {
+      printf(" ");
     }
     
   }
@@ -968,6 +984,7 @@ void mostrarItems(Tabela *tabela, btreeNode *myNode) {
     for(i = 0; i < myNode->count; i++) {
       mostrarItems(tabela, myNode->link[i]);
       char *memoria = myNode->data[i + 1];
+      printf("  * ");
       mostrarItem(tabela, memoria);
       printf("\n");
     }
@@ -985,4 +1002,29 @@ void alterarElemento(Tabela *tabela) {
 
 void removerElemento(Tabela *tabela) {
   
+}
+
+void salvarArvore(Tabela *tabela) {
+  char buffer[256];
+  strcpy(buffer, tabela->nome);
+  
+  FILE *banco = fopen(buffer, "wb");
+  
+  strcat(buffer, ".index");
+  
+  FILE *index = fopen(buffer, "wb");
+  
+  CabecalhoTabela cabecalho;
+  
+  cabecalho.versao = tabela->versao;
+  cabecalho.tamanho = tabela->tamanho_binario;
+  cabecalho.itens = tamanhoArvore(tabela->items);
+  cabecalho.ultimo_id = tabela->ultimo_id;
+  
+  fwrite(&cabecalho, sizeof(cabecalho), 1, banco);
+  
+  
+  
+  fclose(banco);
+  fclose(index);
 }

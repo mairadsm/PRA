@@ -5,7 +5,7 @@
   struct btreeNode *root = NULL;
 
   /* creating new node */
-  struct btreeNode * createNode(int val, struct btreeNode *child, char *memoria) {
+  struct btreeNode * createNode(char *val, struct btreeNode *child, char *memoria) {
         struct btreeNode *newNode;
         newNode = (struct btreeNode *)malloc(sizeof(struct btreeNode));
         newNode->val[1] = val;
@@ -17,7 +17,7 @@
   }
 
   /* Places the value in appropriate position */
-  void addValToNode(int val, int pos, struct btreeNode *node,
+  void addValToNode(char *val, int pos, struct btreeNode *node,
                         struct btreeNode *child, char *memoria) {
         int j = node->count;
         while (j > pos) {
@@ -33,7 +33,7 @@
   }
 
   /* split the node */
-  void splitNode (int val, int *pval, int pos, struct btreeNode *node,
+  void splitNode (char *val, char **pval, int pos, struct btreeNode *node,
      struct btreeNode *child, struct btreeNode **newNode, char **memoria) {
         int median, j;
 
@@ -65,7 +65,7 @@
   }
 
   /* sets the value val in the node */
-  int setValueInNode(int val, int *pval,
+  int setValueInNode(char *val, char **pval,
      struct btreeNode *node, struct btreeNode **child, char **memoria) {
 
         int pos;
@@ -75,12 +75,12 @@
                 return 1;
         }
 
-        if (val < node->val[1]) {
+        if (strcmp(val, node->val[1]) < 0) {
                 pos = 0;
         } else {
                 for (pos = node->count;
-                        (val < node->val[pos] && pos > 1); pos--);
-                if (val == node->val[pos]) {
+                        (strcmp(val, node->val[pos]) < 0 && pos > 1); pos--);
+                if (strcmp(val, node->val[pos]) == 0) {
                         printf("Duplicates not allowed\n");
                         return 0;
                 }
@@ -95,16 +95,6 @@
         }
         return 0;
   }
-
-  /* insert val in B-Tree */
-  //void insertion(int val) {
-        /*int flag, i;
-        struct btreeNode *child;
-
-        flag = setValueInNode(val, &i, root, &child);
-        if (flag)
-                root = createNode(i, child);*/
-  //}
 
   /* copy successor for the value to be deleted */
   void copySuccessor(struct btreeNode *myNode, int pos) {
@@ -305,9 +295,10 @@
                 for (i = 0; i < myNode->count; i++) {
                         traversal(myNode->link[i]);
                         //printf("%d,%d   ", myNode->val[i + 1], myNode->data[i + 1]);
-                        if(myNode->val[i + 1] != myNode->data[i + 1]) {
+                        //if(myNode->val[i + 1] != myNode->data[i + 1]) {
                           //printf("DEU PAU!!!\n");
-                        }
+                        //}
+                        printf("[%s %d]", myNode->val[i + 1], myNode->data[i + 1]);
                 }
                 traversal(myNode->link[i]);
         }
@@ -349,8 +340,8 @@
         }
   }*/
 
-void inserirNaArvore(Tabela *tabela, int val, char *memoria) {
-  int flag, i;
+void inserirNaArvore(Tabela *tabela, char *val, char *memoria) {
+  int flag; char *i;
   struct btreeNode *child = NULL;
   
   root = tabela->items;
@@ -361,4 +352,17 @@ void inserirNaArvore(Tabela *tabela, int val, char *memoria) {
   }
   
   tabela->items = root;
+}
+
+int tamanhoArvore(btreeNode *myNode) {
+  int i, resultado = 0;
+  if (myNode) {
+      for (i = 0; i < myNode->count; i++) {
+        resultado += tamanhoArvore(myNode->link[i]);
+        resultado++;
+      }
+      resultado += tamanhoArvore(myNode->link[i]);
+  }
+  
+  return resultado;
 }
