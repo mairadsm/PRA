@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/***************************************************************************************/
-/* Equipe: Bruna de Oliveira    */
-/*         Leonardo Rosa        */
-/*         Rafael Rizzatti      */
-/***************************************************************************************/
+#include "CuTest.h"
+
+/*********************************/
+/* Aluna: Maira da Silva Machado */
+/*********************************/
 
 typedef struct{
     char nome_entidade[100];
@@ -36,9 +36,27 @@ tabela findOne(char *nome, int ID);//FUNCAO QUE RETORNA A ENTIDADE CASO ACHE A C
 tabela *chargeEntity(char *nome);//FUNCAO QUE CARREGA O VETOR DE ENTIDADES
 void changeEntity(char *nome); //FUNCAO QUE ALTERA O VALOR DO ID DE UM ELEMENTO
 void removeEntity(char *nome);//FUNCAO QUE DELETA UMA ENTIDADE ATRAVES DO ID
-void heapsort(heap a[], int n);//ORDENA OS ELEMENTOS ATRAVES DO INDICE
+// ja existe uma funcao heapsort no Mac
+void heapsort2(heap a[], int n);//ORDENA OS ELEMENTOS ATRAVES DO INDICE
 void ordena(char *nome);
 void mostraIndex(char *nome);
+
+// limpa buffer do teclado
+void purge() {
+  // descobre o sistem usando o preprocessador
+  #if defined(_WIN32) || defined(__WIN32__)
+    fflush(stdin);
+    //#warning Estou no Windows!
+  #elif defined(__MACH__) || defined(__APPLE__)
+    fpurge(stdin);
+    //#warning Estou num Mac OS X!
+  #elif defined(__GNUC__)
+    __fpurge(stdin);
+    //#warning Estou no Linux!
+  #else
+    #error em que sistema voce esta compilando???
+  #endif
+}
 
 int main(){
     int opc;
@@ -111,13 +129,12 @@ void writeEntity(char *nome){
     char *string,aux[100];
     int numero,i;
     tabela auxTabela;
-    string=&aux;
+    string=aux;
     arqGeral=fopen(nome,"ab");
     for(i=0;i<entidadeGeral.qtd_campos;i++){
         printf("Digite o %s:\n",entidadeGeral.campos[i]);
         if(strcmp(entidadeGeral.tipos[i],"int")==0){
-             __fpurge(stdin);
-            //fflush(stdin);
+            purge();
             gets(string);
             //fwrite(entidadeGeral.campos[i],sizeof(entidadeGeral.campos[i]),1,arqGeral);
             if(strcmp(entidadeGeral.campos[i],"id")==0){
@@ -133,8 +150,7 @@ void writeEntity(char *nome){
             string[0]='\0';
         }
         else if(strcmp(entidadeGeral.tipos[i],"char")==0){
-           __fpurge(stdin);
-            //fflush(stdin);
+            purge();
             gets(string);
             if(strcmp(entidadeGeral.campos[i],"id")==0){
                 auxTabela=findOne(nome,atoi(string));
@@ -326,8 +342,7 @@ void changeEntity(char *nome){
     for(i=0;i<qnt_elementos;i++){
         if(ID==atoi(vet[i].campos[0])){
             for(j=1;j<entidadeGeral.qtd_campos;j++){
-                 __fpurge(stdin);
-            	//fflush(stdin);
+                purge();
                 printf("Digite o novo %s\n",entidadeGeral.campos[j]);
                 scanf("%s",novo);
                 strcpy(vet[i].campos[j],novo);
@@ -553,7 +568,7 @@ void ordena(char *nome){
             printf("\nid - %d, pos - %d", vet[i].id, vet[i].pos);
         }
 
-        heapsort(vet, count);
+        heapsort2(vet, count);
 
 
         strcpy(index, nome);
@@ -567,7 +582,7 @@ void ordena(char *nome){
     }
 }
 
-void heapsort(heap a[], int n){
+void heapsort2(heap a[], int n){
 
    int i = n / 2, pai, filho, t, k;
 
@@ -621,8 +636,7 @@ void mostraIndex(char *nome){
         fread(&aux,sizeof(heap),1,arqIndice);
         printf("\nid: %d, pos: %d", aux.id, aux.pos);
     }
-    __fpurge(stdout);
-    //fflush(stdout);  //pra windows
-
+    purge();
+    
     fclose(arqIndice);
 }

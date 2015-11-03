@@ -1,10 +1,10 @@
-all: Trabalho_Final.exe
+all: Trabalho.exe
 
-Trabalho_Final.exe: Trabalho_Final.o
-	gcc -o Trabalho_Final.exe Trabalho_Final.o
+Trabalho.exe: Trabalho.o CuTest.o
+	gcc -o Trabalho.exe $^
 
-Trabalho_Final.o: Trabalho_Final.c
-	gcc -c Trabalho_Final.c
+%.o: %.c
+	gcc -c $*.c -o $*.o
 
 clean:
-	rm Trabalho_Final.o Trabalho_Final.exe
+	rm Trabalho.o Trabalho.exe
