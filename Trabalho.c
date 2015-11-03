@@ -40,6 +40,7 @@ int main(){
   while(1){
     mostrarMenu();
   }
+  
   return 0;
 }
 
@@ -921,17 +922,61 @@ void inserirElemento(Tabela *tabela) {
   // se chegamos aqui, adiciona o item
   tabela->ultimo_id++;
   int id = tabela->ultimo_id;
-  
-  //
-  printf("id = %d\n", id);
-  printf("memoria = %p\n", memoria);
+  if(coluna_do_id) {
+    char buffer[coluna_do_id->tamanho + 1];
+    sprintf(buffer, "%d", id);
+    memcpy(memoria + coluna_do_id->distancia, buffer, coluna_do_id->tamanho);
+  }
   
   //
   inserirNaArvore(tabela, id, memoria);
 }
 
+void mostrarItem(Tabela *tabela, char *memoria) {
+  printf("(");
+  int i;
+  for(i = 0; i < tabela->quantidade_colunas; i++) {
+    printf("%s:", tabela->colunas[i].nome);
+    
+    if(tabela->colunas[i].tipo == &CHAR) {
+      // copia a memoria
+      char buffer[tabela->colunas[i].tamanho + 1];
+      buffer[tabela->colunas[i].tamanho] = 0;
+      memcpy(buffer, memoria + tabela->colunas[i].distancia, tabela->colunas[i].tamanho);
+      
+      //
+      printf("\"%s\" ", buffer);
+    } else if(tabela->colunas[i].tipo == &INT) {
+      // copia a memoria
+      char buffer[tabela->colunas[i].tamanho + 1];
+      buffer[tabela->colunas[i].tamanho] = 0;
+      memcpy(buffer, memoria + tabela->colunas[i].distancia, tabela->colunas[i].tamanho);
+      
+      //
+      printf("%s ", buffer);
+    } else {
+      
+    }
+    
+  }
+  printf(")");
+}
+
+void mostrarItems(Tabela *tabela, btreeNode *myNode) {
+  int i;
+  if(myNode) {
+    for(i = 0; i < myNode->count; i++) {
+      mostrarItems(tabela, myNode->link[i]);
+      char *memoria = myNode->data[i + 1];
+      mostrarItem(tabela, memoria);
+      printf("\n");
+    }
+    mostrarItems(tabela, myNode->link[i]);
+  }
+}
+
 void listarElementos(Tabela *tabela) {
-  
+  mostrarItems(tabela, tabela->items);
 }
 
 void alterarElemento(Tabela *tabela) {

@@ -353,8 +353,6 @@ void inserirNaArvore(Tabela *tabela, int val, char *memoria) {
   int flag, i;
   struct btreeNode *child = NULL;
   
-  // root esta hardcoded em varios locais... :(
-  
   root = tabela->items;
   
   flag = setValueInNode(val, &i, root, &child, &memoria);
@@ -362,6 +360,5 @@ void inserirNaArvore(Tabela *tabela, int val, char *memoria) {
     root = createNode(i, child, memoria);
   }
   
-  //
   tabela->items = root;
 }

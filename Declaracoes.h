@@ -84,6 +84,9 @@ void inserirElemento(Tabela *);
 void listarElementos(Tabela *);
 void alterarElemento(Tabela *);
 void removerElemento(Tabela *);
+void mostrarItem(Tabela *, char *);
+void mostrarItems(Tabela *, btreeNode *);
 
 //
 void inserirNaArvore(Tabela *, int, char *);
+
