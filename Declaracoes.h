@@ -89,6 +89,7 @@ void removerElemento(Tabela *);
 void mostrarItem(Tabela *, char *);
 void mostrarItems(Tabela *, btreeNode *);
 void salvarArvore(Tabela *);
+void lerTabelas();
 
 //
 void inserirNaArvore(Tabela *, char *, char *);

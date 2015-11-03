@@ -36,6 +36,8 @@ int main(){
   leiaTabelas();
   
   createFiles();
+  
+  lerTabelas();
 
   while(1){
     mostrarMenu();
@@ -786,6 +788,34 @@ int lerCabecalho(Tabela *tabela, CabecalhoTabela *cabecalho) {
   return 0;
 }
 
+void lerTabelas() {
+  int i;
+  for(i = 0; i < quantidade_tabelas; i++) {
+    
+    Tabela *tabela = &tabelas[i];
+    
+    CabecalhoTabela cabecalho;
+    
+    FILE *arquivo = fopen(tabela->nome, "rb");
+    if(arquivo) {
+      
+      fread(&cabecalho, sizeof(CabecalhoTabela), 1, arquivo);
+      
+      int j;
+      for(j = 0; j < cabecalho.itens; j++) {
+        char *memoria = malloc(tabela->tamanho_binario);
+        fread(memoria, tabela->tamanho_binario, 1, arquivo);
+        
+        // assumindo que o id e o primeiro item das tabelas
+        inserirNaArvore(tabela, memoria, memoria);
+      }
+      
+      fclose(arquivo);
+    }
+    
+  }
+}
+
 void criarTabela(Tabela *tabela) {
   
   FILE *arquivo = fopen(tabela->nome, "wb");
@@ -825,7 +855,7 @@ void mostrarMenu() {
     exit(0);
   }
   
-  if(opcao < quantidade_tabelas) {
+  if(opcao <= quantidade_tabelas) {
     menuCRUD(&tabelas[opcao - 1]);
     return;
   }
@@ -881,8 +911,6 @@ void menuCRUD(Tabela *tabela){
 
 void inserirElemento(Tabela *tabela) {
   printf("Inserindo novo elemento para a tabela %s.\n\n", tabela->nome);
-  
-  printf("tamanho da tabela = %d\n", tabela->tamanho_binario);
   
   char *memoria = malloc(tabela->tamanho_binario);
   
@@ -1004,6 +1032,19 @@ void removerElemento(Tabela *tabela) {
   
 }
 
+void salvarItems(Tabela *tabela, FILE *banco, FILE *index, int *posicao, btreeNode *myNode) {
+  int i;
+  if(myNode) {
+    for(i = 0; i < myNode->count; i++) {
+      salvarItems(tabela, banco, index, posicao, myNode->link[i]);
+      
+      char *memoria = myNode->data[i + 1];
+      fwrite(memoria, tabela->tamanho_binario, 1, banco);
+    }
+    salvarItems(tabela, banco, index, posicao, myNode->link[i]);
+  }
+}
+
 void salvarArvore(Tabela *tabela) {
   char buffer[256];
   strcpy(buffer, tabela->nome);
@@ -1023,7 +1064,9 @@ void salvarArvore(Tabela *tabela) {
   
   fwrite(&cabecalho, sizeof(cabecalho), 1, banco);
   
+  int posicao = sizeof(cabecalho);
   
+  salvarItems(tabela, banco, index, &posicao, tabela->items);
   
   fclose(banco);
   fclose(index);
