@@ -35,40 +35,12 @@ int main(){
   
   leiaTabelas();
   
-  
-    int opc;
-    createFiles();
-  
-    exit(EXIT_SUCCESS);
-  
-    while(1){
-        puts("\t\tMENU DE ENTIDADES\t\t\n");
-        puts("1- Autor");
-        puts("2- Leitor");
-        puts("3- Livro");
-        puts("4- Autor Do Livro");
-        puts("0- Sair");
-        printf(":>> ");
-        scanf("%i",&opc);
-        if(opc==1){
-            menuCRUD("Autor");
-        }
-        else if(opc==2){
-            menuCRUD("Leitor");
-        }
-        else if(opc==3){
-            menuCRUD("Livro");
-        }
-        else if(opc==4){
-            menuCRUD("AutorDoLivro");
-        }
-        else if(opc==0)
-            break;
-        else{
-            puts("Opcao Invalida!\n");
-        }
-    }
-    return 0;
+  createFiles();
+
+  while(1){
+    mostrarMenu();
+  }
+  return 0;
 }
 
 void menuCRUD(char *nome){
@@ -778,6 +750,7 @@ void checarConsistencia() {
       
     }
     
+    // a distancia final e o tamanho do item na memoria
     tabela->tamanho_binario = distancia;
   }
   
@@ -790,7 +763,7 @@ void ordenarTabelas() {
   // ordena colunas
   int i;
   for(i = 0; i < quantidade_tabelas; i++) {
-    qsort(tabelas[i].colunas, tabelas[i].quantidade_colunas, sizeof(Coluna), &compara_colunas);
+    //qsort(tabelas[i].colunas, tabelas[i].quantidade_colunas, sizeof(Coluna), &compara_colunas);
   }
 }
 
@@ -847,10 +820,68 @@ void criarTabela(Tabela *tabela) {
   CabecalhoTabela cabecalho;
   
   cabecalho.versao = tabela->versao;
+  cabecalho.tamanho = tabela->tamanho_binario;
   cabecalho.itens = 0;
   
   fwrite(&cabecalho, sizeof(CabecalhoTabela), 1, arquivo);
   
   fclose(arquivo);
   
+}
+
+void mostrarMenu() {
+  /*puts("\t\tMENU DE ENTIDADES\t\t\n");
+  puts("1- Autor");
+  puts("2- Leitor");
+  puts("3- Livro");
+  puts("4- Autor Do Livro");
+  puts("0- Sair");
+  printf(":>> ");
+  scanf("%i",&opc);
+  if(opc==1){
+      menuCRUD("Autor");
+  }
+  else if(opc==2){
+      menuCRUD("Leitor");
+  }
+  else if(opc==3){
+      menuCRUD("Livro");
+  }
+  else if(opc==4){
+      menuCRUD("AutorDoLivro");
+  }
+  else if(opc==0)
+      break;
+  else{
+      puts("Opcao Invalida!\n");
+  }*/
+  puts("Escolha uma tabela:");
+  puts("");
+  puts("+- [MENU] ------------------------------------+");
+  
+  int i;
+  for(i = 0; i < quantidade_tabelas; i++) {
+    printf("| (%d) %-40s|\n", i + 1, tabelas[i].nome);
+  }
+  puts("| (0) Sair                                    |");
+  puts("+---------------------------------------------+");
+  
+  printf("> ");
+  int opcao;
+  scanf("%d", &opcao);
+  purge();
+  
+  if(opcao == 0) {
+    puts("Adeus!");
+    exit(0);
+  }
+  
+  if(opcao < quantidade_tabelas) {
+    // ...
+  }
+  
+  #define VERMELHO "\033[31m"
+  #define RESETA "\033[0m"
+  
+  puts(VERMELHO "Opcao invalida!!!" RESETA);
 }

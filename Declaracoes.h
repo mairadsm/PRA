@@ -47,6 +47,7 @@ typedef struct Tabela {
 
 typedef struct CabecalhoTabela {
   int versao;
+  int tamanho;
   int itens;
 } CabecalhoTabela;
 
@@ -72,3 +73,4 @@ void ordenarTabelas();
 Tabela *procuraTabela(const char *);
 int lerCabecalho(Tabela *, CabecalhoTabela *);
 void criarTabela(Tabela *);
+void mostrarMenu();
