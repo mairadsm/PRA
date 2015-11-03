@@ -1,6 +1,9 @@
 #define MAX 4
 #define MIN 2
 
+#define VERMELHO "\033[31m"
+#define RESETA "\033[0m"
+
 typedef struct btreeNode {
       int val[MAX + 1], count;
       struct btreeNode *link[MAX + 1];
@@ -54,7 +57,6 @@ typedef struct CabecalhoTabela {
 void createFiles();//FUNCAO QUE CRIA OS ARQUIVOS
 void writeEntity(char *nome);//FUNCAO QUE GRAVA ENTIDADES NOS ARQUIVOS
 void readFiles();//FUNCAO QUE LE TODO O ARQUIVO E PRINTA NA TELA
-void menuCRUD(char *nome); //SUBMENU
 void carrega_entidadeGeral(char *nome); //CARREGA A ENTIDADE GERAL DE ACORDO COM O HEADER DO ARQUIVO
 tabela findOne(char *nome, int ID);//FUNCAO QUE RETORNA A ENTIDADE CASO ACHE A CHAVE PRIMARIA
 tabela *chargeEntity(char *nome);//FUNCAO QUE CARREGA O VETOR DE ENTIDADES
@@ -74,3 +76,8 @@ Tabela *procuraTabela(const char *);
 int lerCabecalho(Tabela *, CabecalhoTabela *);
 void criarTabela(Tabela *);
 void mostrarMenu();
+void menuCRUD(Tabela *nome);
+void inserirElemento(Tabela *);
+void listarElementos(Tabela *);
+void alterarElemento(Tabela *);
+void removerElemento(Tabela *);

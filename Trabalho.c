@@ -43,40 +43,6 @@ int main(){
   return 0;
 }
 
-void menuCRUD(char *nome){
-    int opc,i;
-    carrega_entidadeGeral(nome);
-    puts("\t\tMENU CRUD\t\t\n");
-    puts("1- Inserir um novo elemento\n");
-    puts("2- Mostrar todos os elementos da entidade\n");
-    puts("3- Alterar um elemento\n");
-    puts("4- Remover um elemento\n");
-    puts("5- Mostrar indices ordenados\n");
-    puts("0- Sair");
-    printf(":>> ");
-    scanf("%i",&opc);
-    if(opc==1){
-        writeEntity(nome);
-    }
-    else if(opc==2){
-        readFiles(nome);
-    }
-    else if(opc==3){
-        changeEntity(nome);
-    }
-    else if(opc==4){
-        removeEntity(nome);
-    }
-    else if(opc==5){
-        mostraIndex(nome);
-    }
-    else if(opc==0)
-        return;
-    else{
-        puts("Opcao Invalida!\n");
-    }
-}
-
 void writeEntity(char *nome){
     char *string,aux[100];
     int numero,i;
@@ -830,31 +796,6 @@ void criarTabela(Tabela *tabela) {
 }
 
 void mostrarMenu() {
-  /*puts("\t\tMENU DE ENTIDADES\t\t\n");
-  puts("1- Autor");
-  puts("2- Leitor");
-  puts("3- Livro");
-  puts("4- Autor Do Livro");
-  puts("0- Sair");
-  printf(":>> ");
-  scanf("%i",&opc);
-  if(opc==1){
-      menuCRUD("Autor");
-  }
-  else if(opc==2){
-      menuCRUD("Leitor");
-  }
-  else if(opc==3){
-      menuCRUD("Livro");
-  }
-  else if(opc==4){
-      menuCRUD("AutorDoLivro");
-  }
-  else if(opc==0)
-      break;
-  else{
-      puts("Opcao Invalida!\n");
-  }*/
   puts("Escolha uma tabela:");
   puts("");
   puts("+- [MENU] ------------------------------------+");
@@ -877,11 +818,71 @@ void mostrarMenu() {
   }
   
   if(opcao < quantidade_tabelas) {
-    // ...
+    menuCRUD(&tabelas[opcao - 1]);
+    return;
   }
   
-  #define VERMELHO "\033[31m"
-  #define RESETA "\033[0m"
-  
   puts(VERMELHO "Opcao invalida!!!" RESETA);
+}
+
+void menuCRUD(Tabela *tabela){
+  printf("+- [%s] ", tabela->nome);
+  
+  int i;
+  for(i = 0; i < 40 - strlen(tabela->nome); i++) {
+    printf("-");
+  }
+  
+  puts("+");
+  puts("| (1) Inserir novo elemento                   |");
+  puts("| (2) Mostrar todos os elementos da entidade  |");
+  puts("| (3) Alterar um elemento                     |");
+  puts("| (4) Remover um elemento                     |");
+  puts("| (0) Voltar                                  |");
+  puts("+---------------------------------------------+");
+  
+  printf("> ");
+  int opcao;
+  scanf("%d", &opcao);
+  purge();
+  
+  switch(opcao) {
+    case 0:
+      return;
+    case 1:
+      inserirElemento(tabela);
+      menuCRUD(tabela);
+      break;
+    case 2:
+      listarElementos(tabela);
+      menuCRUD(tabela);
+      break;
+    case 3:
+      alterarElemento(tabela);
+      menuCRUD(tabela);
+      break;
+    case 4:
+      removerElemento(tabela);
+      menuCRUD(tabela);
+      break;
+    default:
+      puts(VERMELHO "Opcao invalida!!!" RESETA);
+      menuCRUD(tabela);
+  };
+}
+
+void inserirElemento(Tabela *tabela) {
+  
+}
+
+void listarElementos(Tabela *tabela) {
+  
+}
+
+void alterarElemento(Tabela *tabela) {
+  
+}
+
+void removerElemento(Tabela *tabela) {
+  
 }
