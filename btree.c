@@ -312,7 +312,7 @@
         }
   }
 
-  int main() {
+  /*int main() {
         int val, ch;
         while (1) {
                 printf("1. Inserção\t2. Deletar\n");
@@ -346,4 +346,4 @@
                 }
                 printf("\n");
         }
-  }
+  }*/

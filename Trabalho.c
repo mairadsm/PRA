@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "CuTest.h"
+#include "btree.c"
 
 /*********************************/
 /* Aluna: Maira da Silva Machado */
@@ -41,6 +42,9 @@ void heapsort2(heap a[], int n);//ORDENA OS ELEMENTOS ATRAVES DO INDICE
 void ordena(char *nome);
 void mostraIndex(char *nome);
 
+//
+void leiaTabelas();
+
 // limpa buffer do teclado
 void purge() {
   // descobre o sistem usando o preprocessador
@@ -59,6 +63,11 @@ void purge() {
 }
 
 int main(){
+  
+  leiaTabelas();
+  
+  exit(EXIT_SUCCESS);
+  
     int opc;
     createFiles();
     while(1){
@@ -168,8 +177,8 @@ void writeEntity(char *nome){
     ordena(nome);
 }
 
-void createFiles(){//Funcao para criar os arquivos casa nao exista, caso exista abre para leitura
-    if(!(arqGeral=fopen("Autor","rb"))){
+void createFiles(){
+    /*if(!(arqGeral=fopen("Autor","rb"))){
         arqGeral=fopen("Autor","wb");
         fwrite("qnt=107,entidade=[Autor],qnt_campos=[3],campos=[id,nome,sobrenome],tamanho=[6,20,20],tipo=[int,char,char]",sizeof(char),107,arqGeral);
         fclose(arqGeral);
@@ -196,7 +205,7 @@ void createFiles(){//Funcao para criar os arquivos casa nao exista, caso exista 
         fclose(arqGeral);
     }
     else
-        fclose(arqGeral);
+        fclose(arqGeral);*/
 }
 
 void readFiles(char *nome){
@@ -640,3 +649,73 @@ void mostraIndex(char *nome){
     
     fclose(arqIndice);
 }
+
+void leiaTabela(FILE *);
+void leiaColunas(FILE *, const char *);
+
+void leiaTabelas() {
+  FILE *arquivo = fopen("Tabelas", "r");
+  if(arquivo) {
+    
+    // enquanto o arquivo nao estiver vazio
+    while(!feof(arquivo)) {
+      leiaTabela(arquivo);
+    }
+    
+  } else {
+    printf("O arquivo de tabelas não existe!\n");
+    exit(1);
+  }
+}
+
+int fpeek(FILE *arquivo) {
+  int c = fgetc(arquivo);
+  ungetc(c, arquivo);
+  return c;
+};
+
+
+void leiaTabela(FILE *arquivo) {
+  char nome[256] = "";
+  fscanf(arquivo, "%[^()](", nome);
+  nome[sizeof(nome) - 1] = 0;
+  
+  printf("nome = %s\n", nome);
+  leiaColunas(arquivo, nome);
+  
+}
+
+void leiaColunas(FILE *arquivo, const char *tabela) {
+  char coluna[256] = "";
+  char tipo[256] = "";
+  int tamanho = 0;
+  
+  while(1) {
+    
+    // limpa os buffers
+    coluna[0] = 0;
+    tipo[0] = 0;
+    
+    // ve se terminou a tabela
+    if(fpeek(arquivo) == ')') {
+      // pula uma linha
+      fscanf(arquivo, ")%[\r\n ]", coluna);
+      break;
+    }
+    
+    int resultado = fscanf(arquivo, "%[^, ] %[^,[ ][%d], ", coluna, tipo, &tamanho);
+    
+    if(resultado == 0 || resultado == EOF) {
+      printf("Erro ao ler o arquivo de tabelas!\n");
+      exit(1);
+    }
+    
+    coluna[sizeof(coluna) - 1] = 0;
+    tipo[sizeof(tipo) - 1] = 0;
+    
+    printf("Coluna: %s; tipo: %s; tamanho: %d\n", coluna, tipo, tamanho);
+    
+  };
+  
+  
+};
