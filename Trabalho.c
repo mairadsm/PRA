@@ -692,6 +692,9 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
   
   while(1) {
     
+    // vamos ignorar espaços em branco dentro da tabela ;)
+    fscanf(arquivo, "%[ \r\n\t]", coluna); // < variável auxiliar
+    
     // limpa os buffers
     coluna[0] = 0;
     tipo[0] = 0;
@@ -699,11 +702,16 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
     // ve se terminou a tabela
     if(fpeek(arquivo) == ')') {
       // pula uma linha
-      fscanf(arquivo, ")%[\r\n ]", coluna);
+      int resultado = fscanf(arquivo, ")%[\r\n]", coluna); // < variável auxiliar
+      
+      if(resultado == 0 || resultado == EOF) {
+        printf("Erro ao ler o arquivo de tabelas!\n");
+        exit(1);
+      }
       break;
     }
     
-    int resultado = fscanf(arquivo, "%[^, ] %[^,[ ][%d], ", coluna, tipo, &tamanho);
+    int resultado = fscanf(arquivo, "%[^, \r\n\t] %[^,[ \r\n\t][%d],", coluna, tipo, &tamanho);
     
     if(resultado == 0 || resultado == EOF) {
       printf("Erro ao ler o arquivo de tabelas!\n");
