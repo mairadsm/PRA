@@ -586,6 +586,7 @@ void leiaTabela(FILE *arquivo, Tabela *tabela) {
   
   leiaColunas(arquivo, tabela);
   
+  tabela->ultimo_id = 0;
 }
 
 void leiaColunas(FILE *arquivo, Tabela *tabela) {
@@ -756,6 +757,9 @@ void createFiles(){
       }
       if(tabela->versao > cabecalho.versao) {
         criarTabela(tabela);
+      } else {
+        // atualiza o ultimo id
+        tabela->ultimo_id = cabecalho.ultimo_id;
       }
     } else {
       // cria o arquivo
@@ -788,6 +792,7 @@ void criarTabela(Tabela *tabela) {
   cabecalho.versao = tabela->versao;
   cabecalho.tamanho = tabela->tamanho_binario;
   cabecalho.itens = 0;
+  cabecalho.ultimo_id = 0;
   
   fwrite(&cabecalho, sizeof(CabecalhoTabela), 1, arquivo);
   
@@ -872,7 +877,57 @@ void menuCRUD(Tabela *tabela){
 }
 
 void inserirElemento(Tabela *tabela) {
+  printf("Inserindo novo elemento para a tabela %s.\n\n", tabela->nome);
   
+  printf("tamanho da tabela = %d\n", tabela->tamanho_binario);
+  
+  char *memoria = malloc(tabela->tamanho_binario);
+  
+  Coluna *coluna_do_id = NULL;
+  
+  int i;
+  for(i = 0; i < tabela->quantidade_colunas; i++) {
+    
+    Coluna *coluna = &tabela->colunas[i];
+    
+    if(strcmp(coluna->nome, "id") == 0) {
+      coluna_do_id = coluna;
+    } else {
+      
+      purge();
+      printf("%s: ", coluna->nome);
+      
+      char buffer[256];
+      
+      if(coluna->tipo == &INT) {
+        
+      } else if(coluna->tipo == &CHAR) {
+        fgets(buffer, 255, stdin);
+        
+        // remove a nova linha no final
+        buffer[strlen(buffer) - 1] = 0;
+        
+        // Copia para a memoria
+        memcpy(memoria + coluna->distancia, buffer, coluna->tamanho);
+        
+      } else {
+        
+      }
+      
+    }
+    
+  }
+  
+  // se chegamos aqui, adiciona o item
+  tabela->ultimo_id++;
+  int id = tabela->ultimo_id;
+  
+  //
+  printf("id = %d\n", id);
+  printf("memoria = %p\n", memoria);
+  
+  //
+  inserirNaArvore(tabela, id, memoria);
 }
 
 void listarElementos(Tabela *tabela) {

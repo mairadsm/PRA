@@ -4,18 +4,12 @@
 
   struct btreeNode *root = NULL;
 
-  int nodeCount() {
-    if(root) {
-      return root->count;
-    }
-    return 0;
-  }
-
   /* creating new node */
-  struct btreeNode * createNode(int val, struct btreeNode *child) {
+  struct btreeNode * createNode(int val, struct btreeNode *child, char *memoria) {
         struct btreeNode *newNode;
         newNode = (struct btreeNode *)malloc(sizeof(struct btreeNode));
         newNode->val[1] = val;
+        newNode->data[1] = memoria;
         newNode->count = 1;
         newNode->link[0] = root;
         newNode->link[1] = child;
@@ -24,21 +18,23 @@
 
   /* Places the value in appropriate position */
   void addValToNode(int val, int pos, struct btreeNode *node,
-                        struct btreeNode *child) {
+                        struct btreeNode *child, char *memoria) {
         int j = node->count;
         while (j > pos) {
                 node->val[j + 1] = node->val[j];
+                node->data[j + 1] = node->data[j];
                 node->link[j + 1] = node->link[j];
                 j--;
         }
         node->val[j + 1] = val;
+        node->data[j + 1] = memoria;
         node->link[j + 1] = child;
         node->count++;
   }
 
   /* split the node */
   void splitNode (int val, int *pval, int pos, struct btreeNode *node,
-     struct btreeNode *child, struct btreeNode **newNode) {
+     struct btreeNode *child, struct btreeNode **newNode, char **memoria) {
         int median, j;
 
         if (pos > MIN)
@@ -50,6 +46,7 @@
         j = median + 1;
         while (j <= MAX) {
                 (*newNode)->val[j - median] = node->val[j];
+                (*newNode)->data[j - median] = node->data[j];
                 (*newNode)->link[j - median] = node->link[j];
                 j++;
         }
@@ -57,18 +54,19 @@
         (*newNode)->count = MAX - median;
 
         if (pos <= MIN) {
-                addValToNode(val, pos, node, child);
+                addValToNode(val, pos, node, child, *memoria);
         } else {
-                addValToNode(val, pos - median, *newNode, child);
+                addValToNode(val, pos - median, *newNode, child, *memoria);
         }
         *pval = node->val[node->count];
+        *memoria = node->data[node->count];
         (*newNode)->link[0] = node->link[node->count];
         node->count--;
   }
 
   /* sets the value val in the node */
   int setValueInNode(int val, int *pval,
-     struct btreeNode *node, struct btreeNode **child) {
+     struct btreeNode *node, struct btreeNode **child, char **memoria) {
 
         int pos;
         if (!node) {
@@ -87,11 +85,11 @@
                         return 0;
                 }
         }
-        if (setValueInNode(val, pval, node->link[pos], child)) {
+        if (setValueInNode(val, pval, node->link[pos], child, memoria)) {
                 if (node->count < MAX) {
-                        addValToNode(*pval, pos, node, *child);
+                        addValToNode(*pval, pos, node, *child, *memoria);
                 } else {
-                        splitNode(*pval, pval, pos, node, *child, child);
+                        splitNode(*pval, pval, pos, node, *child, child, memoria);
                         return 1;
                 }
         }
@@ -99,14 +97,14 @@
   }
 
   /* insert val in B-Tree */
-  void insertion(int val) {
-        int flag, i;
+  //void insertion(int val) {
+        /*int flag, i;
         struct btreeNode *child;
 
         flag = setValueInNode(val, &i, root, &child);
         if (flag)
-                root = createNode(i, child);
-  }
+                root = createNode(i, child);*/
+  //}
 
   /* copy successor for the value to be deleted */
   void copySuccessor(struct btreeNode *myNode, int pos) {
@@ -306,7 +304,10 @@
         if (myNode) {
                 for (i = 0; i < myNode->count; i++) {
                         traversal(myNode->link[i]);
-                        printf("%d ", myNode->val[i + 1]);
+                        //printf("%d,%d   ", myNode->val[i + 1], myNode->data[i + 1]);
+                        if(myNode->val[i + 1] != myNode->data[i + 1]) {
+                          //printf("DEU PAU!!!\n");
+                        }
                 }
                 traversal(myNode->link[i]);
         }
@@ -347,3 +348,20 @@
                 printf("\n");
         }
   }*/
+
+void inserirNaArvore(Tabela *tabela, int val, char *memoria) {
+  int flag, i;
+  struct btreeNode *child = NULL;
+  
+  // root esta hardcoded em varios locais... :(
+  
+  root = tabela->items;
+  
+  flag = setValueInNode(val, &i, root, &child, &memoria);
+  if (flag) {
+    root = createNode(i, child, memoria);
+  }
+  
+  //
+  tabela->items = root;
+}

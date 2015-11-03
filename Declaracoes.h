@@ -6,6 +6,7 @@
 
 typedef struct btreeNode {
       int val[MAX + 1], count;
+      char *data[MAX + 1];
       struct btreeNode *link[MAX + 1];
 } btreeNode;
 
@@ -45,6 +46,7 @@ typedef struct Tabela {
   int quantidade_colunas;
   Coluna *colunas;
   int tamanho_binario;
+  int ultimo_id;
   btreeNode *items;
 } Tabela;
 
@@ -52,6 +54,7 @@ typedef struct CabecalhoTabela {
   int versao;
   int tamanho;
   int itens;
+  int ultimo_id;
 } CabecalhoTabela;
 
 void createFiles();//FUNCAO QUE CRIA OS ARQUIVOS
@@ -81,3 +84,6 @@ void inserirElemento(Tabela *);
 void listarElementos(Tabela *);
 void alterarElemento(Tabela *);
 void removerElemento(Tabela *);
+
+//
+void inserirNaArvore(Tabela *, int, char *);
