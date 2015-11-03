@@ -9,7 +9,14 @@
         struct btreeNode *link[MAX + 1];
   };
 
-  struct btreeNode *root;
+  struct btreeNode *root = NULL;
+
+  int nodeCount() {
+    if(root) {
+      return root->count;
+    }
+    return 0;
+  }
 
   /* creating new node */
   struct btreeNode * createNode(int val, struct btreeNode *child) {

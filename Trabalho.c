@@ -28,19 +28,7 @@ FILE *arqIndice;
 
 tabela entidadeGeral;
 
-void createFiles();//FUNCAO QUE CRIA OS ARQUIVOS
-void writeEntity(char *nome);//FUNCAO QUE GRAVA ENTIDADES NOS ARQUIVOS
-void readFiles();//FUNCAO QUE LE TODO O ARQUIVO E PRINTA NA TELA
-void menuCRUD(char *nome); //SUBMENU
-void carrega_entidadeGeral(char *nome); //CARREGA A ENTIDADE GERAL DE ACORDO COM O HEADER DO ARQUIVO
-tabela findOne(char *nome, int ID);//FUNCAO QUE RETORNA A ENTIDADE CASO ACHE A CHAVE PRIMARIA
-tabela *chargeEntity(char *nome);//FUNCAO QUE CARREGA O VETOR DE ENTIDADES
-void changeEntity(char *nome); //FUNCAO QUE ALTERA O VALOR DO ID DE UM ELEMENTO
-void removeEntity(char *nome);//FUNCAO QUE DELETA UMA ENTIDADE ATRAVES DO ID
-// ja existe uma funcao heapsort no Mac
-void heapsort2(heap a[], int n);//ORDENA OS ELEMENTOS ATRAVES DO INDICE
-void ordena(char *nome);
-void mostraIndex(char *nome);
+#include "Declaracoes.h"
 
 //
 void leiaTabelas();
@@ -650,8 +638,27 @@ void mostraIndex(char *nome){
     fclose(arqIndice);
 }
 
-void leiaTabela(FILE *);
-void leiaColunas(FILE *, const char *);
+typedef struct Tipo {
+  //
+} Tipo;
+
+typedef struct Coluna {
+  char *nome;
+  Tipo *tipo;
+  int tamanho;
+} Coluna;
+
+typedef struct Tabela {
+  Tipo tipo; // simular heranca!
+  
+  int quantidade_colunas;
+  
+  Coluna *colunas;
+  
+} Tabela;
+
+Tipo INT;
+Tipo CHAR;
 
 void leiaTabelas() {
   FILE *arquivo = fopen("Tabelas", "r");
@@ -666,6 +673,7 @@ void leiaTabelas() {
     printf("O arquivo de tabelas não existe!\n");
     exit(1);
   }
+  checarConsistencia();
 }
 
 int fpeek(FILE *arquivo) {
@@ -698,6 +706,7 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
     // limpa os buffers
     coluna[0] = 0;
     tipo[0] = 0;
+    tamanho = 0;
     
     // ve se terminou a tabela
     if(fpeek(arquivo) == ')') {
@@ -711,11 +720,27 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
       break;
     }
     
-    int resultado = fscanf(arquivo, "%[^, \r\n\t] %[^,[ \r\n\t][%d],", coluna, tipo, &tamanho);
+    int resultado = fscanf(arquivo, "%[^, \r\n\t] %[^,[ \r\n\t]", coluna, tipo);
     
     if(resultado == 0 || resultado == EOF) {
       printf("Erro ao ler o arquivo de tabelas!\n");
       exit(1);
+    }
+    
+    if(strcmp(tipo, "int") == 0 || strcmp(tipo, "char") == 0) {
+      
+      resultado = fscanf(arquivo, "[%d]", &tamanho);
+      
+      if(resultado == 0 || resultado == EOF) {
+        printf("Erro ao ler o arquivo de tabelas!\n");
+        exit(1);
+      }
+    } else {
+      //
+    }
+    
+    if(fpeek(arquivo) == ',') {
+      fgetc(arquivo);
     }
     
     coluna[sizeof(coluna) - 1] = 0;
@@ -727,3 +752,7 @@ void leiaColunas(FILE *arquivo, const char *tabela) {
   
   
 };
+
+void checarConsistencia() {
+  
+}

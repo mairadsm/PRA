@@ -1,4 +1,4 @@
 Autor(id int[6], nome char[20], sobrenome char[20])
 Leitor(id int[6], nome char[30], fone char[20], endereco int[40], cidade int[40], estado int[2])
 Livro(id int[6], titulo char[30], editora char[30], anoPublicacao int[11], isbn char[20])
-AutorDoLivro(autorId int[4], livroId int[6], sequence int[2])
+AutorDoLivro(autor Autor, livro Livro, sequence int[2])
