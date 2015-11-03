@@ -7,8 +7,6 @@
 #include <string.h>
 
 #include "CuTest.h"
-#include "btree.c"
-
 #include "Declaracoes.h"
 
 FILE *arqGeral;
@@ -37,10 +35,12 @@ int main(){
   
   leiaTabelas();
   
-  exit(EXIT_SUCCESS);
   
     int opc;
     createFiles();
+  
+    exit(EXIT_SUCCESS);
+  
     while(1){
         puts("\t\tMENU DE ENTIDADES\t\t\n");
         puts("1- Autor");
@@ -146,37 +146,6 @@ void writeEntity(char *nome){
     }
     fclose(arqGeral);
     ordena(nome);
-}
-
-void createFiles(){
-    /*if(!(arqGeral=fopen("Autor","rb"))){
-        arqGeral=fopen("Autor","wb");
-        fwrite("qnt=107,entidade=[Autor],qnt_campos=[3],campos=[id,nome,sobrenome],tamanho=[6,20,20],tipo=[int,char,char]",sizeof(char),107,arqGeral);
-        fclose(arqGeral);
-    }
-    else
-        fclose(arqGeral);
-    if(!(arqGeral=fopen("Livro","rb"))){
-        arqGeral=fopen("Livro","wb");
-        fwrite("qnt=140,entidade=[Livro],qnt_campos=[5],campos=[id,titulo,editora,anoPublicacao,isbn],tamanho=[6,30,30,11,20],tipo=[int,char,char,int,char]",sizeof(char),140,arqGeral);
-        fclose(arqGeral);
-    }
-    else
-        fclose(arqGeral);
-    if(!(arqGeral=fopen("Leitor","rb"))){
-        arqGeral=fopen("Leitor","wb");
-        fwrite("qnt=145,entidade=[Leitor],qnt_campos=[6],campos=[id,nome,fone,endereco,cidade,estado],tamanho=[6,30,20,40,40,2],tipo=[int,char,char,int,int,]",sizeof(char),145,arqGeral);
-        fclose(arqGeral);
-    }
-    else
-        fclose(arqGeral);
-    if(!(arqGeral=fopen("AutorDoLivro","rb"))){
-        arqGeral=fopen("AutorDoLivro","wb");
-        fwrite("qnt=116,entidade=[AutorDoLivro],qnt_campos=[3],campos=[autorId,livroId,sequence],tamanho=[4,6,2],tipo=[int,int,int]",sizeof(char),116,arqGeral);
-        fclose(arqGeral);
-    }
-    else
-        fclose(arqGeral);*/
 }
 
 void readFiles(char *nome){
@@ -621,6 +590,8 @@ void mostraIndex(char *nome){
     fclose(arqIndice);
 }
 
+//----------------------------------------------------------------------------//
+
 int quantidade_tabelas = 0;
 Tabela *tabelas = NULL;
 
@@ -642,6 +613,8 @@ void leiaTabelas() {
       
     }
     
+    fclose(arquivo);
+    
   } else {
     printf("O arquivo de tabelas não existe!\n");
     exit(1);
@@ -649,13 +622,6 @@ void leiaTabelas() {
   
   checarConsistencia();
   
-  /*printf("Minhas tabelas:\n");
-  for(i = 0; i < quantidade_tabelas; i++) {
-    printf("  * Tabela %d = %s\n", i, tabelas[i].nome);
-    for(j = 0; j < tabelas[i].quantidade_colunas; j++) {
-      printf("    * Coluna %s [%d]\n", tabelas[i].colunas[j].nome, tabelas[i].colunas[j].tamanho);
-    };
-  };*/
 }
 
 int fpeek(FILE *arquivo) {
@@ -666,10 +632,17 @@ int fpeek(FILE *arquivo) {
 
 
 void leiaTabela(FILE *arquivo, Tabela *tabela) {
+  int versao;
   char nome[256] = "";
-  fscanf(arquivo, "%[^()](", nome);
+  int resultado = fscanf(arquivo, "%[^() ]%d(", nome, &versao);
   nome[sizeof(nome) - 1] = 0;
   
+  if(resultado == 0 || resultado == EOF) {
+    printf("Erro ao ler o arquivo de tabelas!\n");
+    exit(1);
+  }
+  
+  tabela->versao = versao;
   tabela->nome = malloc(strlen(nome) + 1);
   strcpy(tabela->nome, nome);
   
@@ -769,16 +742,22 @@ void checarConsistencia() {
     
     Tabela *tabela = &tabelas[i];
     
+    int distancia = 0;
+    
     int j;
     for(j = 0; j < tabela->quantidade_colunas; j++) {
       Coluna *coluna = &tabela->colunas[j];
+      
+      coluna->distancia = distancia;
       
       const char *nome_do_tipo = coluna->nome_do_tipo;
       
       if(strcmp(nome_do_tipo, "int") == 0) {
         coluna->tipo = &INT;
+        distancia += coluna->tamanho;
       } else if(strcmp(nome_do_tipo, "char") == 0) {
         coluna->tipo = &CHAR;
+        distancia += coluna->tamanho;
       } else {
         
         Tabela *novo_tipo = procuraTabela(nome_do_tipo);
@@ -788,6 +767,7 @@ void checarConsistencia() {
           exit(1);
         }
         
+        distancia += sizeof(Tabela *);
         coluna->tipo = &novo_tipo->tipo;
         novo_tipo->tipo.tabela = novo_tipo;
         
@@ -797,6 +777,8 @@ void checarConsistencia() {
       free(nome_do_tipo);
       
     }
+    
+    tabela->tamanho_binario = distancia;
   }
   
 }
@@ -819,4 +801,56 @@ Tabela *procuraTabela(const char *nome) {
   
   // como ordenamos, podemos usar pesquisa binaria
   return bsearch(&ficticia, tabelas, quantidade_tabelas, sizeof(Tabela), &compara_tabelas);
+}
+
+void createFiles(){
+  int i;
+  for(i = 0; i < quantidade_tabelas; i++) {
+    Tabela *tabela = &tabelas[i];
+    
+    CabecalhoTabela cabecalho;
+    
+    if(lerCabecalho(tabela, &cabecalho)) {
+      if(tabela->versao < cabecalho.versao) {
+        printf("Erro, versão no arquivo de tabelas para %s é menor que a do banco de dados!\n", tabela->nome);
+        exit(1);
+      }
+      if(tabela->versao > cabecalho.versao) {
+        criarTabela(tabela);
+      }
+    } else {
+      // cria o arquivo
+      criarTabela(tabela);
+    }
+    
+  }
+}
+
+int lerCabecalho(Tabela *tabela, CabecalhoTabela *cabecalho) {
+  
+  FILE *arquivo = fopen(tabela->nome, "rb");
+  if(arquivo) {
+    
+    fread(cabecalho, sizeof(CabecalhoTabela), 1, arquivo);
+    
+    fclose(arquivo);
+    return 1;
+  }
+  
+  return 0;
+}
+
+void criarTabela(Tabela *tabela) {
+  
+  FILE *arquivo = fopen(tabela->nome, "wb");
+  
+  CabecalhoTabela cabecalho;
+  
+  cabecalho.versao = tabela->versao;
+  cabecalho.itens = 0;
+  
+  fwrite(&cabecalho, sizeof(CabecalhoTabela), 1, arquivo);
+  
+  fclose(arquivo);
+  
 }

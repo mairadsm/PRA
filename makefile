@@ -1,6 +1,6 @@
 all: Trabalho.exe
 
-Trabalho.exe: Trabalho.o CuTest.o
+Trabalho.exe: Trabalho.o CuTest.o btree.o
 	gcc -o Trabalho.exe $^
 
 %.o: %.c

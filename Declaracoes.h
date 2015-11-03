@@ -1,3 +1,11 @@
+#define MAX 4
+#define MIN 2
+
+typedef struct btreeNode {
+      int val[MAX + 1], count;
+      struct btreeNode *link[MAX + 1];
+} btreeNode;
+
 typedef struct{
     char nome_entidade[100];
     int qtd_campos;
@@ -13,27 +21,34 @@ typedef struct{
 } heap;
 
 typedef struct Tipo {
-  struct Tabela *tabela;
+  struct Tabela *tabela; // tabela a que esse tipo pertence (ignore para INT e CHAR)
 } Tipo;
 
 typedef struct Coluna {
-  char *nome;
+  char *nome; // nome da coluna
   // salva espaco
   union {
-    char *nome_do_tipo;
-    Tipo *tipo;
+    char *nome_do_tipo; // nome do tipo (string)
+    Tipo *tipo; // ponteiro para o tipo
   };
-  int tamanho;
+  int tamanho; // quantidade de items (ignore se chave estrangeira)
+  int distancia; // distancia na memoria para esse item
 } Coluna;
 
 typedef struct Tabela {
   Tipo tipo;
-  
+  int versao;
   char *nome;
   int quantidade_colunas;
   Coluna *colunas;
-  
+  int tamanho_binario;
+  btreeNode *items;
 } Tabela;
+
+typedef struct CabecalhoTabela {
+  int versao;
+  int itens;
+} CabecalhoTabela;
 
 void createFiles();//FUNCAO QUE CRIA OS ARQUIVOS
 void writeEntity(char *nome);//FUNCAO QUE GRAVA ENTIDADES NOS ARQUIVOS
@@ -55,3 +70,5 @@ void leiaColunas(FILE *, Tabela *);
 void checarConsistencia();
 void ordenarTabelas();
 Tabela *procuraTabela(const char *);
+int lerCabecalho(Tabela *, CabecalhoTabela *);
+void criarTabela(Tabela *);

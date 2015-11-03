@@ -1,13 +1,6 @@
 #include <stdio.h>
   #include <stdlib.h>
-
-  #define MAX 4
-  #define MIN 2
-
-  struct btreeNode {
-        int val[MAX + 1], count;
-        struct btreeNode *link[MAX + 1];
-  };
+  #include "Declaracoes.h"
 
   struct btreeNode *root = NULL;
 
